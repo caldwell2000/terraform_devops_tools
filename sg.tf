@@ -99,28 +99,28 @@ resource "aws_security_group" "sgdb"{
     from_port = 5432
     to_port = 5432
     protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
+    cidr_blocks = ["${var.private_subnet_2a_cidr}"]
   }
 
   ingress {
     from_port = 5432
     to_port = 5432
     protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
+    cidr_blocks = ["${var.private_subnet_2b_cidr}"]
   }
 
   ingress {
     from_port = -1
     to_port = -1
     protocol = "icmp"
-    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
+    cidr_blocks = ["${var.private_subnet_2a_cidr}"]
   }
 
   ingress {
     from_port = -1
     to_port = -1
     protocol = "icmp"
-    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
+    cidr_blocks = ["${var.private_subnet_2b_cidr}"]
   }
 
   egress {

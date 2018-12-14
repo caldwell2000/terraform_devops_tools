@@ -14,7 +14,7 @@ data "aws_ami" "gitlab" {
 
   filter {
     name   = "name"
-    values = ["GitLab EE*"]
+    values = ["GitLab CE*"]
   }
 }
 
@@ -111,7 +111,7 @@ resource "aws_lb_listener" "git-80" {
 
 resource "aws_launch_configuration" "as_conf" {
   name_prefix   = "poc-"
-  image_id      = "${data.aws_ami.gitlab.id}"
+  image_id      = "${data.aws_ami.rhel.id}"
   instance_type = "t3.medium"
   key_name = "${aws_key_pair.default.id}"
   security_groups = ["${aws_security_group.sgapp.id}"]
