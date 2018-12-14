@@ -3,6 +3,12 @@
 #variable "aws_key_path" {}
 #variable "aws_key_name" {}
 
+provider "aws" {
+	region =	"${var.aws_region}"
+	profile	= 	"poc"
+
+}
+
 variable "region" {
 	description = "Region Name"
 	default = "us-east-2"
@@ -18,6 +24,11 @@ variable "ami" {
     default = {
         us-east-2 = "ami-03291866" # Red Hat Enterprise Linux 7.5
     }
+}
+
+variable "remote_cidr" {
+    description = "CIDR from Remote Testing Source"
+    default = "173.172.103.202/32"
 }
 
 variable "vpc_cidr" {
@@ -56,5 +67,31 @@ variable "private_db_subnet_2b_cidr" {
 }
 variable "key_path" {
   description = "SSH Public Key path"
-  default = "C:/Users/rcald/.ssh/id_rsa.pub"
+  default = "C:/Users/rich.caldwell/.ssh/id_rsa.pub"
 }
+variable "asg_min" {
+  description = "Auto Scaling Minimum Size"
+  default = "1"
+}
+variable "asg_max" {
+  description = "Auto Scaling Maximum Size"
+  default = "2"
+}
+variable "asg_desired" {
+  description = "Auto Scaling Desired Size"
+  default = "1"
+}
+variable "data_volume_type" {
+  description = "EBS Volume Type"
+  default = "gp2"
+}
+variable "data_volume_size" {
+  description = "EBS Volume Size"
+  default = "50"
+}
+variable "root_block_device_size" {
+  description = "Root EBS Volume Size"
+  default = "50"
+}
+
+
