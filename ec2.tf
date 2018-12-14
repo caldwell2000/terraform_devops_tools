@@ -50,11 +50,22 @@ resource "aws_lb" "alb_apps" {
   name               = "private-apps-alb"
   #subnets            = ["${aws_subnet.private-subnet.id}", "${aws_subnet.private-subnet2.id}"]
   subnets            = ["${aws_subnet.public-subnet.id}", "${aws_subnet.public-subnet2.id}"]
-  security_groups    = ["${aws_security_group.sgapp.id}"]
+  security_groups    = ["${aws_security_group.sg_git.id}", "${aws_security_group.sg_jenkins.id}"]
   internal           = false
   load_balancer_type = "application"
   tags = {
     Environment = "dev"
+  }
+}
+
+resource "aws_lb_target_group" "jenkins-8080" {
+  name     = "jenkins-8080"
+  port     = 8080 
+  protocol = "HTTP"
+  vpc_id   = "${aws_vpc.default.id}"
+  health_check {
+    path = "/"
+    matcher = "403"
   }
 }
 
@@ -65,18 +76,21 @@ resource "aws_lb_target_group" "git-80" {
   vpc_id   = "${aws_vpc.default.id}"
 }
 
-resource "aws_lb_target_group" "git-443" {
-  name     = "git-443"
-  port     = 443
-  protocol = "HTTPS"
-  vpc_id   = "${aws_vpc.default.id}"
-}
-
 resource "aws_lb_target_group" "git-7990" {
   name     = "git-7990"
   port     = 7990
   protocol = "HTTP"
   vpc_id   = "${aws_vpc.default.id}"
+}
+
+resource "aws_lb_listener" "jenkins-8080" {
+  load_balancer_arn = "${aws_lb.alb_apps.id}"
+  port              = "8080"
+  protocol          = "HTTP"
+  default_action {
+    target_group_arn = "${aws_lb_target_group.jenkins-8080.id}"
+    type             = "forward"
+  }
 }
 
 resource "aws_lb_listener" "git-7990" {
@@ -85,16 +99,6 @@ resource "aws_lb_listener" "git-7990" {
   protocol          = "HTTP"
   default_action {
     target_group_arn = "${aws_lb_target_group.git-7990.id}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_listener" "git-443" {
-  load_balancer_arn = "${aws_lb.alb_apps.id}"
-  port              = "443"
-  protocol          = "HTTP"
-  default_action {
-    target_group_arn = "${aws_lb_target_group.git-443.id}"
     type             = "forward"
   }
 }
@@ -109,12 +113,12 @@ resource "aws_lb_listener" "git-80" {
   }
 }
 
-resource "aws_launch_configuration" "as_conf" {
-  name_prefix   = "poc-"
+resource "aws_launch_configuration" "git" {
+  name_prefix   = "git-"
   image_id      = "${data.aws_ami.rhel.id}"
   instance_type = "t3.medium"
   key_name = "${aws_key_pair.default.id}"
-  security_groups = ["${aws_security_group.sgapp.id}"]
+  security_groups = ["${aws_security_group.sg_git.id}"]
   user_data = "${file("scripts/git.sh")}"
   root_block_device {
     volume_size = "${var.root_block_device_size}"
@@ -131,18 +135,64 @@ resource "aws_launch_configuration" "as_conf" {
   }
 }
 
-resource "aws_autoscaling_group" "git" {
-  name                 = "poc-git"
-  launch_configuration = "${aws_launch_configuration.as_conf.name}"
-  min_size             = "${var.asg_min}"
-  max_size             = "${var.asg_max}"
-  desired_capacity     = "${var.asg_desired}"
-  vpc_zone_identifier  = ["${aws_subnet.private-subnet.id}", "${aws_subnet.private-subnet2.id}"]
-  target_group_arns    = ["${aws_lb_target_group.git-80.id}", "${aws_lb_target_group.git-443.id}", "${aws_lb_target_group.git-7990.id}"]
+resource "aws_launch_configuration" "jenkins" {
+  name_prefix   = "jenkins-"
+  image_id      = "${data.aws_ami.rhel.id}"
+  instance_type = "t3.medium"
+  key_name = "${aws_key_pair.default.id}"
+  security_groups = ["${aws_security_group.sg_jenkins.id}"]
+  user_data = "${file("scripts/jenkins.sh")}"
+  root_block_device {
+    volume_size = "${var.root_block_device_size}"
+  }
+
+  ebs_block_device {
+    device_name = "/dev/sdf"
+    volume_type = "${var.data_volume_type}"
+    volume_size = "${var.data_volume_size}"
+  }
 
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_autoscaling_group" "jenkins" {
+  name                 = "poc-jenkins"
+  launch_configuration = "${aws_launch_configuration.jenkins.name}"
+  min_size             = "${var.asg_jenkins_min}"
+  max_size             = "${var.asg_jenkins_max}"
+  desired_capacity     = "${var.asg_jenkins_desired}"
+  vpc_zone_identifier  = ["${aws_subnet.private-subnet.id}", "${aws_subnet.private-subnet2.id}"]
+  target_group_arns    = ["${aws_lb_target_group.jenkins-8080.id}"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+    tag {
+        key = "Name"
+        value = "jenkins"
+        propagate_at_launch = true
+    }
+}
+
+resource "aws_autoscaling_group" "git" {
+  name                 = "poc-git"
+  launch_configuration = "${aws_launch_configuration.git.name}"
+  min_size             = "${var.asg_git_min}"
+  max_size             = "${var.asg_git_max}"
+  desired_capacity     = "${var.asg_git_desired}"
+  vpc_zone_identifier  = ["${aws_subnet.private-subnet.id}", "${aws_subnet.private-subnet2.id}"]
+  target_group_arns    = ["${aws_lb_target_group.git-80.id}", "${aws_lb_target_group.git-7990.id}"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+    tag {
+        key = "Name"
+        value = "git"
+        propagate_at_launch = true
+    }
 }
 
 output "bastion_pub_ip" {

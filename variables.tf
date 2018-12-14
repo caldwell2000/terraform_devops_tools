@@ -69,15 +69,27 @@ variable "key_path" {
   description = "SSH Public Key path"
   default = "C:/Users/rich.caldwell/.ssh/id_rsa.pub"
 }
-variable "asg_min" {
+variable "asg_git_min" {
   description = "Auto Scaling Minimum Size"
   default = "1"
 }
-variable "asg_max" {
+variable "asg_git_max" {
   description = "Auto Scaling Maximum Size"
   default = "2"
 }
-variable "asg_desired" {
+variable "asg_git_desired" {
+  description = "Auto Scaling Desired Size"
+  default = "1"
+}
+variable "asg_jenkins_min" {
+  description = "Auto Scaling Minimum Size"
+  default = "1"
+}
+variable "asg_jenkins_max" {
+  description = "Auto Scaling Maximum Size"
+  default = "2"
+}
+variable "asg_jenkins_desired" {
   description = "Auto Scaling Desired Size"
   default = "1"
 }

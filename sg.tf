@@ -31,8 +31,54 @@ resource "aws_security_group" "sgbastion" {
 }
 
 # Define the security group for private App subnet
-resource "aws_security_group" "sgapp"{
-  name = "sg_app"
+resource "aws_security_group" "sg_jenkins"{
+  name = "sg_jenkins"
+  description = "Allow traffic from public subnet"
+
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
+  }
+
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
+  }
+
+  ingress {
+    from_port = 8080
+    to_port = 8080
+    protocol = "tcp"
+    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
+  }
+
+  ingress {
+    from_port = -1
+    to_port = -1
+    protocol = "icmp"
+    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0 
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  vpc_id = "${aws_vpc.default.id}"
+
+  tags {
+    Name = "Jenkins_SG"
+  }
+}
+
+# Define the security group for private App subnet
+resource "aws_security_group" "sg_git"{
+  name = "sg_git"
   description = "Allow traffic from public subnet"
 
   ingress {
@@ -52,13 +98,6 @@ resource "aws_security_group" "sgapp"{
   ingress {
     from_port = 80
     to_port = 80
-    protocol = "tcp"
-    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
-  }
-
-  ingress {
-    from_port = 443
-    to_port = 443
     protocol = "tcp"
     cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
   }
@@ -86,12 +125,12 @@ resource "aws_security_group" "sgapp"{
   vpc_id = "${aws_vpc.default.id}"
 
   tags {
-    Name = "Private App SG"
+    Name = "GIT_SG"
   }
 }
 
 # Define the security group for private DB subnet
-resource "aws_security_group" "sgdb"{
+resource "aws_security_group" "sg_db"{
   name = "sg_db"
   description = "Allow traffic from public subnet"
 
@@ -132,6 +171,6 @@ resource "aws_security_group" "sgdb"{
   vpc_id = "${aws_vpc.default.id}"
 
   tags {
-    Name = "Private DB SG"
+    Name = "DB_SG"
   }
 }
