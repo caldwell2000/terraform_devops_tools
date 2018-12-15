@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#Mount EBS Volume and make XFS Filesystem
+/sbin/mkfs.xfs /dev/nvme1n1
+mkdir /data1
+/bin/mount /dev/nvme1n1 /data1
+echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
+
 echo "Install OS Patches"
 sudo yum update -y
 

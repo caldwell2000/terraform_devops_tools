@@ -1,5 +1,14 @@
 # Define EC2 Instance inside the public subnet
 
+data "aws_ami" "amzn" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-2.0.*-x86_64-gp2"]
+  }
+}
+
 data "aws_ami" "bitbucket" {
   most_recent = true
 
@@ -115,7 +124,7 @@ resource "aws_lb_listener" "git-80" {
 
 resource "aws_launch_configuration" "git" {
   name_prefix   = "git-"
-  image_id      = "${data.aws_ami.rhel.id}"
+  image_id      = "${data.aws_ami.amzn.id}"
   instance_type = "t3.medium"
   key_name = "${aws_key_pair.default.id}"
   security_groups = ["${aws_security_group.sg_git.id}"]

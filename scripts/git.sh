@@ -1,4 +1,9 @@
 #!/bin/bash
+/sbin/mkfs.xfs /dev/nvme1n1
+mkdir /data1
+/bin/mount /dev/nvme1n1 /data1
+echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
+
 sudo yum update -y
 sudo yum install unzip
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
@@ -12,4 +17,4 @@ sudo yum install -y git
 sudo yum install postfix
 sudo systemctl enable postfix
 sudo systemctl start postfix
-sudo /bin/gitlab-ctl reconfigure
+#sudo /bin/gitlab-ctl reconfigure
