@@ -10,7 +10,7 @@ echo "Install OS Patches"
 sudo yum update -y
 
 echo "Install common tools"
-sudo yum install unzip
+sudo yum install tcpdump telnet bind-utils wget zip unzip -y
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
@@ -20,6 +20,7 @@ sudo yum install pygpgme yum-utils
 echo "Install Jenkins stable release"
 yum remove -y java
 yum install -y java-1.8.0-openjdk
+JAVA_HOME=/usr/lib/jvm/; export JAVA_HOME
 wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
@@ -32,6 +33,12 @@ rm /tmp/telegraf.rpm
 chkconfig telegraf on
 mv /tmp/telegraf.conf /etc/telegraf/telegraf.conf
 service telegraf start
+
+echo "Install Groovy"
+curl -s get.sdkman.io | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install groovy
+groovy -version
 
 echo "Install Docker engine"
 yum update -y

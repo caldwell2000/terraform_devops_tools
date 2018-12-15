@@ -5,7 +5,7 @@ mkdir /data1
 echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
 
 sudo yum update -y
-sudo yum install unzip
+sudo yum install tcpdump telnet bind-utils wget zip unzip -y
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
