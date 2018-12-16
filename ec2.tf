@@ -9,24 +9,6 @@ data "aws_ami" "amzn" {
   }
 }
 
-data "aws_ami" "bitbucket" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["Atlassian Bitbucket*"]
-  }
-}
-
-data "aws_ami" "gitlab" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["GitLab CE*"]
-  }
-}
-
 data "aws_ami" "rhel" {
   most_recent = true
 
@@ -36,40 +18,13 @@ data "aws_ami" "rhel" {
   }
 }
 
-data "aws_iam_policy" "efs-readonly-policy" {
-#  name = "AmazonElasticFileSystemReadOnlyAccess"
-  arn = "arn:aws:iam::aws:policy/AmazonElasticFileSystemReadOnlyAccess"
+data "aws_iam_policy" "ec2-readonly-policy" {
+  arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
 
-resource "aws_iam_policy" "efs-readonly2-policy" {
-  name        = "efs-readonly2-policy"
-  description = "Allows EFS Readonly Actions to EC2"
 
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "ec2:DescribeAvailabilityZones",
-                "ec2:DescribeNetworkInterfaceAttribute",
-                "ec2:DescribeNetworkInterfaces",
-                "ec2:DescribeSecurityGroups",
-                "ec2:DescribeSubnets",
-                "ec2:DescribeVpcAttribute",
-                "ec2:DescribeVpcs",
-                "elasticfilesystem:Describe*",
-                "kms:ListAliases"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-        }
-    ]
-}
-EOF
-}
-resource "aws_iam_role" "ec2-efs-readonly" {
-  name = "ec2-efs-readonly"
+resource "aws_iam_role" "ec2-readonly-role" {
+  name = "ec2-readonly-role"
 
   assume_role_policy = <<EOF
 {
@@ -88,14 +43,14 @@ resource "aws_iam_role" "ec2-efs-readonly" {
 EOF
 }
 
-resource "aws_iam_instance_profile" "efs-readonly-profile" {
-  name  = "efs-readonly-profile"
-  role  = "${aws_iam_role.ec2-efs-readonly.name}"
+resource "aws_iam_instance_profile" "ec2-readonly-profile" {
+  name  = "ec2-readonly-profile"
+  role  = "${aws_iam_role.ec2-readonly-role.name}"
 }
 
-resource "aws_iam_role_policy_attachment" "attach-efs-readonly-policy" {
-  role       = "${aws_iam_role.ec2-efs-readonly.name}"
-  policy_arn = "${aws_iam_policy.efs-readonly2-policy.arn}"
+resource "aws_iam_role_policy_attachment" "attach-ec2-readonly-policy" {
+  role       = "${aws_iam_role.ec2-readonly-role.name}"
+  policy_arn = "${data.aws_iam_policy.ec2-readonly-policy.arn}"
 }
 
 resource "aws_instance" "bastion" {
@@ -125,7 +80,7 @@ resource "aws_instance" "jenkins" {
   associate_public_ip_address = false
   source_dest_check = true
   user_data = "${file("scripts/jenkins-master.sh")}"
-  iam_instance_profile = "${aws_iam_instance_profile.efs-readonly-profile.name}"
+  iam_instance_profile = "${aws_iam_instance_profile.ec2-readonly-profile.name}"
 
   root_block_device {
   volume_size = "${var.root_block_device_size}"

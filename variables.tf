@@ -105,5 +105,6 @@ variable "root_block_device_size" {
   description = "Root EBS Volume Size"
   default = "50"
 }
-
-
+variable "gitlab_postgres_password" {
+  default = "supersecret"
+}

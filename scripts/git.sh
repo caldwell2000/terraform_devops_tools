@@ -17,4 +17,5 @@ sudo yum install -y git
 sudo yum install postfix
 sudo systemctl enable postfix
 sudo systemctl start postfix
+# aws elbv2 --region=us-east-2 --output=text describe-load-balancers |grep private-apps |awk '{print $4}'
 #sudo /bin/gitlab-ctl reconfigure

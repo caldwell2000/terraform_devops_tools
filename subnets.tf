@@ -60,3 +60,11 @@ resource "aws_subnet" "private-db-subnet2" {
     Name = "Database Private Subnet 2"
   }
 }
+resource "aws_db_subnet_group" "default" {
+  name       = "main-subnet-group"
+  subnet_ids = ["${aws_subnet.private-db-subnet.id}", "${aws_subnet.private-db-subnet2.id}"]
+
+  tags = {
+    Name = "DB Subnet Group"
+  }
+}

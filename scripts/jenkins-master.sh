@@ -6,29 +6,23 @@ mkdir /data1
 /bin/mount /dev/nvme1n1 /data1
 echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
 
-echo "Install common tools"
+# Install common tools
 yum install -y tcpdump telnet bind-utils wget zip unzip nfs-utils pygpgme yum-utils 
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
 
 # Mount EFS Filesystem
-set -x
-MP="/jenkins"
-mkdir –p $MP
+JENKINS_DIR="/jenkins"
+mkdir –p $JENKINS_DIR
 EFS_FSID=`/usr/local/bin/aws --region us-east-2 --output text efs describe-file-systems |awk '{print $5}'`
 AZ=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
 REGION=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/'`
 EFS_PATH="$AZ.$EFS_FSID.efs.$REGION.amazonaws.com"
-#mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP
 cat << EOF >> /etc/fstab
-$EFS_PATH:/ $MP nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev  0 0
+$EFS_PATH:/ $JENKINS_DIR nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev  0 0
 EOF
-sleep 5
-nslookup $EFS_PATH
-mount -a
-mount $MP
-set +x
+mount $JENKINS_DIR
 
 echo "Install Jenkins stable release"
 yum remove -y java
@@ -38,7 +32,8 @@ wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/je
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
 sed -i 's/\/var\/lib\/jenkins/\/jenkins/g' /etc/sysconfig/jenkins
-mv /var/lib/jenkins/* /jenkins
+chown jenkins:jenkins /jenkins 
+mv $JENKINS_DIR/* /jenkins
 chkconfig jenkins on
 service jenkins start
 
@@ -66,22 +61,22 @@ echo "Install git"
 yum install -y git
 
 echo "Setup SSH key"
-mkdir /var/lib/jenkins/.ssh
-touch /var/lib/jenkins/.ssh/known_hosts
-chown -R jenkins:jenkins /var/lib/jenkins/.ssh
-chmod 700 /var/lib/jenkins/.ssh
-mv /tmp/id_rsa /var/lib/jenkins/.ssh/id_rsa
-chmod 600 /var/lib/jenkins/.ssh/id_rsa
+mkdir /jenkins/.ssh
+touch /jenkins/.ssh/known_hosts
+chown -R jenkins:jenkins $JENKINS_DIR/.ssh
+chmod 700 $JENKINS_DIR/.ssh
+mv /tmp/id_rsa $JENKINS_DIR/.ssh/id_rsa
+chmod 600 $JENKINS_DIR/.ssh/id_rsa
 
 #echo "Configure Jenkins"
-#mkdir -p /var/lib/jenkins/init.groovy.d
-#mv /tmp/basic-security.groovy /var/lib/jenkins/init.groovy.d/basic-security.groovy
-#mv /tmp/disable-cli.groovy /var/lib/jenkins/init.groovy.d/disable-cli.groovy
-#mv /tmp/csrf-protection.groovy /var/lib/jenkins/init.groovy.d/csrf-protection.groovy
-#mv /tmp/disable-jnlp.groovy /var/lib/jenkins/init.groovy.d/disable-jnlp.groovy
-#mv /tmp/jenkins.install.UpgradeWizard.state /var/lib/jenkins/jenkins.install.UpgradeWizard.state
-#mv /tmp/node-agent.groovy /var/lib/jenkins/init.groovy.d/node-agent.groovy
-#chown -R jenkins:jenkins /var/lib/jenkins/jenkins.install.UpgradeWizard.state
+#mkdir -p $JENKINS_DIR/init.groovy.d
+#mv /tmp/basic-security.groovy $JENKINS_DIR/init.groovy.d/basic-security.groovy
+#mv /tmp/disable-cli.groovy $JENKINS_DIR/init.groovy.d/disable-cli.groovy
+#mv /tmp/csrf-protection.groovy $JENKINS_DIR/init.groovy.d/csrf-protection.groovy
+#mv /tmp/disable-jnlp.groovy $JENKINS_DIR/init.groovy.d/disable-jnlp.groovy
+#mv /tmp/jenkins.install.UpgradeWizard.state $JENKINS_DIR/jenkins.install.UpgradeWizard.state
+#mv /tmp/node-agent.groovy $JENKINS_DIR/init.groovy.d/node-agent.groovy
+#chown -R jenkins:jenkins $JENKINS_DIR/jenkins.install.UpgradeWizard.state
 #mv /tmp/jenkins /etc/sysconfig/jenkins
 #chmod +x /tmp/install-plugins.sh
 #bash /tmp/install-plugins.sh
