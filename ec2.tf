@@ -36,6 +36,68 @@ data "aws_ami" "rhel" {
   }
 }
 
+data "aws_iam_policy" "efs-readonly-policy" {
+#  name = "AmazonElasticFileSystemReadOnlyAccess"
+  arn = "arn:aws:iam::aws:policy/AmazonElasticFileSystemReadOnlyAccess"
+}
+
+resource "aws_iam_policy" "efs-readonly2-policy" {
+  name        = "efs-readonly2-policy"
+  description = "Allows EFS Readonly Actions to EC2"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeNetworkInterfaceAttribute",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeVpcAttribute",
+                "ec2:DescribeVpcs",
+                "elasticfilesystem:Describe*",
+                "kms:ListAliases"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+resource "aws_iam_role" "ec2-efs-readonly" {
+  name = "ec2-efs-readonly"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+  {
+    "Action": "sts:AssumeRole",
+    "Principal": {
+    "Service": "ec2.amazonaws.com"
+    },
+    "Effect": "Allow",
+    "Sid": ""
+  }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_instance_profile" "efs-readonly-profile" {
+  name  = "efs-readonly-profile"
+  roles = ["${aws_iam_role.ec2-efs-readonly.name}"]
+}
+
+resource "aws_iam_role_policy_attachment" "attach-efs-readonly-policy" {
+  role       = "${aws_iam_role.ec2-efs-readonly.name}"
+  policy_arn = "${aws_iam_policy.efs-readonly2-policy.arn}"
+}
+
 resource "aws_instance" "bastion" {
    ami = "${data.aws_ami.rhel.id}"
    instance_type = "t3.micro"
@@ -63,17 +125,23 @@ resource "aws_instance" "jenkins" {
   associate_public_ip_address = false
   source_dest_check = true
   user_data = "${file("scripts/jenkins-master.sh")}"
+  iam_instance_profile = "${aws_iam_instance_profile.efs-readonly-profile.name}"
+
   root_block_device {
   volume_size = "${var.root_block_device_size}"
   }
+
   ebs_block_device {
     device_name = "/dev/sdf"
     volume_type = "${var.data_volume_type}"
     volume_size = "${var.data_volume_size}"
   }
+
   tags {
     Name = "jenkins-master"
   }
+
+  depends_on = ["aws_efs_mount_target.jenkins-master-priv1","aws_efs_mount_target.jenkins-master-priv1"]
 }
 
 resource "aws_lb_target_group_attachment" "jenkins-8080" {
@@ -110,12 +178,6 @@ resource "aws_lb_target_group_attachment" "git-80" {
   port             = 80
 }
 
-resource "aws_lb_target_group_attachment" "git-7990" {
-  target_group_arn = "${aws_lb_target_group.git-7990.arn}"
-  target_id        = "${aws_instance.git.id}"
-  port             = 7990 
-}
-
 resource "aws_lb" "alb_apps" {
   name               = "private-apps-alb"
   subnets            = ["${aws_subnet.public-subnet.id}", "${aws_subnet.public-subnet2.id}"]
@@ -145,7 +207,7 @@ resource "aws_lb_target_group" "jenkins-8080" {
   vpc_id   = "${aws_vpc.default.id}"
   health_check {
     path = "/"
-    matcher = "403"
+    matcher = "200,403"
   }
 }
 
@@ -156,7 +218,7 @@ resource "aws_lb_target_group" "jenkins-slave-8080" {
   vpc_id   = "${aws_vpc.default.id}"
   health_check {
     path = "/"
-    matcher = "403"
+    matcher = "200,403"
   }
 }
 
@@ -165,13 +227,10 @@ resource "aws_lb_target_group" "git-80" {
   port     = 80 
   protocol = "HTTP"
   vpc_id   = "${aws_vpc.default.id}"
-}
-
-resource "aws_lb_target_group" "git-7990" {
-  name     = "git-7990"
-  port     = 7990
-  protocol = "HTTP"
-  vpc_id   = "${aws_vpc.default.id}"
+  health_check {
+    path = "/"
+    matcher = "200,302"
+  }
 }
 
 resource "aws_lb_listener" "jenkins-8080" {
@@ -190,16 +249,6 @@ resource "aws_lb_listener" "jenkins-slave-8080" {
   protocol          = "HTTP"
   default_action {
     target_group_arn = "${aws_lb_target_group.jenkins-slave-8080.id}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_listener" "git-7990" {
-  load_balancer_arn = "${aws_lb.alb_apps.id}"
-  port              = "7990"
-  protocol          = "HTTP"
-  default_action {
-    target_group_arn = "${aws_lb_target_group.git-7990.id}"
     type             = "forward"
   }
 }
@@ -250,7 +299,7 @@ resource "aws_autoscaling_group" "jenkins-slave" {
   }
   tag {
     key                 = "Name" 
-    value               = "jenkins"
+    value               = "jenkins-slave"
     propagate_at_launch = true
   }
 }
