@@ -18,12 +18,17 @@ unzip awscli-bundle.zip
 yum install -y pygpgme yum-utils 
 
 # Mount EFS Filesystem
-MP="/JENKINS_HOME"
+MP="/jenkins"
 mkdir –p $MP
 EFS_FSID=`/usr/local/bin/aws --region us-east-2 --output text efs describe-file-systems |awk '{print $5}'`
 AZ=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
 REGION=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/'`
-mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP
+#mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP
+cat << EOF >> /etc/fstab
+$AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport  0 0
+EOF
+sleep 5
+mount -a
 
 echo "Install Jenkins stable release"
 yum install -y nfs-utils
@@ -33,6 +38,8 @@ JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.191.b12-1.el7_6.x86_64/; export J
 wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
+sed -i 's/\/var\/lib\/jenkins/\/jenkins/g' /etc/sysconfig/jenkins
+mv -r /var/lib/jenkins/* /jenkins
 chkconfig jenkins on
 
 echo "Install Telegraf"
