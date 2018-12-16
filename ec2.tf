@@ -90,7 +90,7 @@ EOF
 
 resource "aws_iam_instance_profile" "efs-readonly-profile" {
   name  = "efs-readonly-profile"
-  roles = ["${aws_iam_role.ec2-efs-readonly.name}"]
+  role  = "${aws_iam_role.ec2-efs-readonly.name}"
 }
 
 resource "aws_iam_role_policy_attachment" "attach-efs-readonly-policy" {

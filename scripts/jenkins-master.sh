@@ -6,32 +6,31 @@ mkdir /data1
 /bin/mount /dev/nvme1n1 /data1
 echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
 
-# Patch OS
-echo "Install OS Patches"
-yum update -y
-
 echo "Install common tools"
-yum install -y tcpdump telnet bind-utils wget zip unzip 
+yum install -y tcpdump telnet bind-utils wget zip unzip nfs-utils pygpgme yum-utils 
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-yum install -y pygpgme yum-utils 
 
 # Mount EFS Filesystem
+set -x
 MP="/jenkins"
 mkdir –p $MP
 EFS_FSID=`/usr/local/bin/aws --region us-east-2 --output text efs describe-file-systems |awk '{print $5}'`
 AZ=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
 REGION=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/'`
+EFS_PATH="$AZ.$EFS_FSID.efs.$REGION.amazonaws.com"
 #mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport $AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP
 cat << EOF >> /etc/fstab
-$AZ.$EFS_FSID.efs.$REGION.amazonaws.com:/ $MP nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport  0 0
+$EFS_PATH:/ $MP nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev  0 0
 EOF
 sleep 5
+nslookup $EFS_PATH
 mount -a
+mount $MP
+set +x
 
 echo "Install Jenkins stable release"
-yum install -y nfs-utils
 yum remove -y java
 yum install -y java-1.8.0-openjdk
 JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.191.b12-1.el7_6.x86_64/; export JAVA_HOME
@@ -39,8 +38,9 @@ wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/je
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
 sed -i 's/\/var\/lib\/jenkins/\/jenkins/g' /etc/sysconfig/jenkins
-mv -r /var/lib/jenkins/* /jenkins
+mv /var/lib/jenkins/* /jenkins
 chkconfig jenkins on
+service jenkins start
 
 echo "Install Telegraf"
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.6.0-1.x86_64.rpm -O /tmp/telegraf.rpm
@@ -57,7 +57,6 @@ sdk install groovy
 groovy -version
 
 echo "Install Docker engine"
-yum install -y yum-utils
 yum-config-manager --enable rhui-REGION-rhel-server-extras
 yum install -y docker
 usermod -aG docker ec2-user
@@ -86,4 +85,8 @@ chmod 600 /var/lib/jenkins/.ssh/id_rsa
 #mv /tmp/jenkins /etc/sysconfig/jenkins
 #chmod +x /tmp/install-plugins.sh
 #bash /tmp/install-plugins.sh
-service jenkins start
+
+# Patch OS
+echo "Install OS Patches"
+yum update -y
+

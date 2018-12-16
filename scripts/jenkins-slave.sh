@@ -6,18 +6,13 @@ mkdir /data1
 /bin/mount /dev/nvme1n1 /data1
 echo /dev/nvme1n1  /data1 xfs defaults,nofail 0 2 >> /etc/fstab
 
-echo "Install OS Patches"
-sudo yum update -y
-
 echo "Install common tools"
-sudo yum install -y tcpdump telnet bind-utils wget zip unzip 
+yum install -y tcpdump telnet bind-utils wget zip unzip nfs-utils pygpgme yum-utils
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
 sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-sudo yum install -y pygpgme yum-utils
 
 echo "Install Jenkins stable release"
-yum install -y nfs-utils
 yum remove -y java
 yum install -y java-1.8.0-openjdk
 JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.191.b12-1.el7_6.x86_64/; export JAVA_HOME
@@ -25,6 +20,7 @@ wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/je
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
 chkconfig jenkins on
+service jenkins start
 
 echo "Install Telegraf"
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.6.0-1.x86_64.rpm -O /tmp/telegraf.rpm
@@ -41,7 +37,6 @@ sdk install groovy
 groovy -version
 
 echo "Install Docker engine"
-sudo yum install -y yum-utils
 sudo yum-config-manager --enable rhui-REGION-rhel-server-extras
 sudo yum install -y docker
 usermod -aG docker ec2-user
@@ -70,4 +65,7 @@ chmod 600 /var/lib/jenkins/.ssh/id_rsa
 #mv /tmp/jenkins /etc/sysconfig/jenkins
 #chmod +x /tmp/install-plugins.sh
 #bash /tmp/install-plugins.sh
-service jenkins start
+
+echo "Install OS Patches"
+sudo yum update -y
+
