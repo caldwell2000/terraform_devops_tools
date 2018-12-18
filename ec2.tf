@@ -285,7 +285,7 @@ resource "aws_launch_configuration" "git" {
 }
 
 resource "aws_autoscaling_group" "git" {
-  name                 = "poc-git"
+  name                 = "git"
   launch_configuration = "${aws_launch_configuration.git.name}"
   min_size             = "${var.asg_git_min}"
   max_size             = "${var.asg_git_max}"
