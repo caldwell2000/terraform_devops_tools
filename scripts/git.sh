@@ -12,10 +12,13 @@ sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
 sudo yum install tcpdump telnet bind-utils wget -y
 curl -s https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
 sudo yum install pygpgme yum-utils
-sudo EXTERNAL_URL="http://localhost" yum install -y gitlab-ce
+URL=`aws elbv2 --region=us-east-2 --output=text describe-load-balancers |grep private-apps |awk '{print $4}'`; export URL
+EXTERNAL_URL="http://$URL"; export EXTERNAL_URL
+yum install -y gitlab-ce
 sudo yum install -y git
 sudo yum install postfix
 sudo systemctl enable postfix
 sudo systemctl start postfix
-# aws elbv2 --region=us-east-2 --output=text describe-load-balancers |grep private-apps |awk '{print $4}'
-#sudo /bin/gitlab-ctl reconfigure
+#Database Initialization - Run Once Manually after deployment
+#force=yes; export force
+#gitlab-rake gitlab:setup

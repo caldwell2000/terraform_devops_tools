@@ -19,12 +19,12 @@ variable "aws_region" {
     default = "us-east-2"
 }
 
-variable "ami" {
-    description = "AMIs by region"
-    default = {
-        us-east-2 = "ami-03291866" # Red Hat Enterprise Linux 7.5
-    }
-}
+#variable "ami" {
+#    description = "AMIs by region"
+#    default = {
+#        us-east-2 = "ami-03291866" # Red Hat Enterprise Linux 7.5
+#    }
+#}
 
 variable "remote_cidr" {
     description = "CIDR from Remote Testing Source"
@@ -91,7 +91,19 @@ variable "asg_jenkins_max" {
 }
 variable "asg_jenkins_desired" {
   description = "Auto Scaling Desired Size"
-  default = "1"
+  default = "2"
+}
+variable "asg_git_min_min" {
+  description = "Auto Scaling Minimum Size"
+  default = "2"
+}
+variable "asg_git_max_max" {
+  description = "Auto Scaling Maximum Size"
+  default = "2"
+}
+variable "asg_git_desired_desired" {
+  description = "Auto Scaling Desired Size"
+  default = "2"
 }
 variable "data_volume_type" {
   description = "EBS Volume Type"
@@ -107,4 +119,7 @@ variable "root_block_device_size" {
 }
 variable "gitlab_postgres_password" {
   default = "supersecret"
+}
+variable "git_rds_multiAZ" {
+  default = "false"
 }
