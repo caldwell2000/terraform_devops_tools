@@ -15,11 +15,11 @@ unzip awscli-bundle.zip
 # Mount EFS Filesystem
 JENKINS_DIR="/jenkins"
 mkdir –p $JENKINS_DIR
-EFS_FSID=`/usr/local/bin/aws --region us-east-2 --output text efs describe-file-systems |awk '{print $5}'`
+EFS_FSID=`/usr/local/bin/aws --region us-east-2 --output text efs describe-file-systems |grep jenkins|awk '{print $5}'`
 AZ=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
 REGION=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/'`
 EFS_PATH="$AZ.$EFS_FSID.efs.$REGION.amazonaws.com"
-cat << EOF >> /etc/fstab
+cat >> /etc/fstab << EOF
 $EFS_PATH:/ $JENKINS_DIR nfs nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev  0 0
 EOF
 mount $JENKINS_DIR

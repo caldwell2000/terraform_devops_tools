@@ -111,3 +111,7 @@ variable "gitlab_postgres_password" {
 variable "git_rds_multiAZ" {
   default = "false"
 }
+variable "availability_zones" {
+  type    = "list"
+  default = ["us-east-2a", "us-east-2b"]
+}

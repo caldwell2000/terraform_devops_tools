@@ -1,7 +1,7 @@
 # Define the security group for public subnet
 # Author: Richert Caldwell
-resource "aws_security_group" "jenkins-efs" {
-  name = "sg_jenkins_efs"
+resource "aws_security_group" "efs-general" {
+  name = "sg_efs_general"
   description = "Allow incoming NFS ports"
 
   ingress {
@@ -202,5 +202,51 @@ resource "aws_security_group" "sg_db"{
 
   tags {
     Name = "DB_SG"
+  }
+}
+
+# Define the security group for Redis
+resource "aws_security_group" "sg_redis"{
+  name = "sg_redis"
+  description = "Allow traffic from private subnet"
+
+  ingress {
+    from_port =6379 
+    to_port = 6379
+    protocol = "tcp"
+    cidr_blocks = ["${var.private_subnet_2a_cidr}"]
+  }
+
+  ingress {
+    from_port = 6379
+    to_port =  6379
+    protocol = "tcp"
+    cidr_blocks = ["${var.private_subnet_2b_cidr}"]
+  }
+
+  ingress {
+    from_port = -1
+    to_port = -1
+    protocol = "icmp"
+    cidr_blocks = ["${var.private_subnet_2a_cidr}"]
+  }
+
+  ingress {
+    from_port = -1
+    to_port = -1
+    protocol = "icmp"
+    cidr_blocks = ["${var.private_subnet_2b_cidr}"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0 
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  vpc_id = "${aws_vpc.default.id}"
+
+  tags {
+    Name = "Redis_SG"
   }
 }

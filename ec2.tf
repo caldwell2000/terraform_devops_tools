@@ -96,7 +96,7 @@ resource "aws_instance" "jenkins" {
     Name = "jenkins-master"
   }
 
-  depends_on = ["aws_efs_mount_target.jenkins-master-priv1","aws_efs_mount_target.jenkins-master-priv1"]
+  depends_on = ["aws_efs_mount_target.jenkins-master-priv1","aws_efs_mount_target.jenkins-master-priv2"]
 }
 
 resource "aws_lb_target_group_attachment" "jenkins-8080" {
@@ -301,7 +301,7 @@ resource "aws_autoscaling_group" "git" {
     value               = "gitlab"
     propagate_at_launch = true
   }
-  depends_on = ["aws_db_instance.gitlab_postgres"]
+  depends_on = ["aws_db_instance.gitlab_postgres","aws_efs_mount_target.git-ssh-priv1","aws_efs_mount_target.git-ssh-priv2","aws_efs_mount_target.git-rails-uploads-priv1","aws_efs_mount_target.git-rails-uploads-priv2","aws_efs_mount_target.git-rails-shared-priv1","aws_efs_mount_target.git-rails-shared-priv2","aws_efs_mount_target.git-builds-priv1","aws_efs_mount_target.git-builds-priv2","aws_efs_mount_target.git-data-priv1","aws_efs_mount_target.git-data-priv2"]
 }
 
 output "bastion_pub_ip" {
