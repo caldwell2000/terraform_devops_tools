@@ -129,6 +129,14 @@ resource "aws_security_group" "sg_git"{
     from_port = 80
     to_port = 80
     protocol = "tcp"
+    description = "Allow Public IP of NAT GW"
+    cidr_blocks = ["${aws_nat_gateway.nat_gw1.public_ip}/31"]
+  }
+
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
     cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
   }
 
