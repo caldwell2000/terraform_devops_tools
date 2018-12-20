@@ -102,68 +102,7 @@ resource "aws_security_group" "sg_jenkins"{
   vpc_id = "${aws_vpc.default.id}"
 
   tags {
-    Name = "Jenkins_SG"
-  }
-}
-
-# Define the security group for private App subnet
-resource "aws_security_group" "sg_git"{
-  name = "sg_git"
-  description = "Allow traffic from public subnet"
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
-  }
-
-  ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    description = "Allow Public IP of NAT GW"
-    cidr_blocks = ["${aws_nat_gateway.nat_gw1.public_ip}/31"]
-  }
-
-  ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
-  }
-
-  ingress {
-    from_port = 7990
-    to_port = 7990
-    protocol = "tcp"
-    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
-  }
-
-  ingress {
-    from_port = -1
-    to_port = -1
-    protocol = "icmp"
-    cidr_blocks = ["${var.private_subnet_2a_cidr}", "${var.private_subnet_2b_cidr}", "${var.public_subnet_2a_cidr}", "${var.public_subnet_2b_cidr}", "${var.remote_cidr}"]
-  }
-
-  egress {
-    from_port = 0
-    to_port = 0 
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  vpc_id = "${aws_vpc.default.id}"
-
-  tags {
-    Name = "GIT_SG"
+    Name = "Jenkins SG"
   }
 }
 
@@ -209,7 +148,7 @@ resource "aws_security_group" "sg_db"{
   vpc_id = "${aws_vpc.default.id}"
 
   tags {
-    Name = "DB_SG"
+    Name = "DB SG"
   }
 }
 
@@ -255,6 +194,6 @@ resource "aws_security_group" "sg_redis"{
   vpc_id = "${aws_vpc.default.id}"
 
   tags {
-    Name = "Redis_SG"
+    Name = "Redis SG"
   }
 }

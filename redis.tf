@@ -17,6 +17,6 @@ security_group_ids = ["${aws_security_group.sg_redis.id}"]
   subnet_group_name  = "${aws_elasticache_subnet_group.gitlab_redis.name}"
 }
 
-output "gitlab_redis_endpoint_address" {
-  value = "${aws_elasticache_replication_group.gitlab_redis.primary_endpoint_address}"
-}
+#output "gitlab_redis_endpoint_address" {
+#  value = "${aws_elasticache_replication_group.gitlab_redis.primary_endpoint_address}"
+#}

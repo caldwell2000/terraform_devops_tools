@@ -35,23 +35,15 @@ data "template_cloudinit_config" "config" {
     content      = "${data.template_file.shell-script.rendered}"
   }
 }
-output "GitLab One-Time DB Creation Command - Primary Only" {
-        value = "force=yes; export force; gitlab-rake gitlab:setup"
-}
-output "GitLab One-Time DB Creation Command - Primary Only (2)" {
-        value = "sudo gitlab-ctl reconfigure"
-}
-output "GitLab Run one time on each secondary instance" {
-        value = "Configure shared secrets. These values can be obtained from the primary GitLab server in /etc/gitlab/gitlab-secrets.json. Copy this file to the secondary servers prior to running the first reconfigure in the steps above"
-}
-output "GitLab Run one time on each secondary instance (2)" {
-        value = "touch /etc/gitlab/skip-auto-reconfigure"
-}
-output "bastion_pub_ip" {
-        value = "${aws_instance.bastion.public_ip}"
-}
-output "Load Balancer Public IP" {
-        value = "${aws_lb.alb_apps.dns_name}"
-}
-
-
+#output "GitLab_One-Time_DB_Creation_Command-Primary_Only" {
+#        value = "force=yes; export force; gitlab-rake gitlab:setup"
+#}
+#output "GitLab_One-Time_DB_Creation_Command-Primary_Only_2" {
+#        value = "sudo gitlab-ctl reconfigure"
+#}
+#output "bastion_pub_ip" {
+#        value = "${aws_instance.bastion.public_ip}"
+#}
+#output "Load_Balancer_Public_IP" {
+#        value = "${aws_lb.alb_apps.dns_name}"
+#}
