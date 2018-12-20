@@ -68,6 +68,11 @@ chmod 700 $JENKINS_DIR/.ssh
 mv /tmp/id_rsa $JENKINS_DIR/.ssh/id_rsa
 chmod 600 $JENKINS_DIR/.ssh/id_rsa
 
+echo "Install Postfix"
+sudo yum -y install postfix
+sudo systemctl enable postfix
+sudo systemctl start postfix
+
 #echo "Configure Jenkins"
 #mkdir -p $JENKINS_DIR/init.groovy.d
 #mv /tmp/basic-security.groovy $JENKINS_DIR/init.groovy.d/basic-security.groovy

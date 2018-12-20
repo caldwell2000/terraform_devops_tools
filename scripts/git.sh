@@ -45,12 +45,12 @@ URL=`aws elbv2 --region=us-east-2 --output=text describe-load-balancers |grep pr
 EXTERNAL_URL="http://$URL"; export EXTERNAL_URL
 yum install -y gitlab-ce
 sudo yum install -y git
-sudo yum install postfix
+sudo yum install -y postfix
 sudo systemctl enable postfix
 sudo systemctl start postfix
-#Database Initialization - Run Once Manually after deployment
-#force=yes; export force
-#gitlab-rake gitlab:setup
+# Database Initialization - Run Once Manually after deployment
+# force=yes; export force
+# gitlab-rake gitlab:setup
 
 # Install OS Patches
 sudo yum update -y

@@ -105,17 +105,6 @@ resource "aws_lb" "alb_apps" {
   }
 }
 
-resource "aws_lb" "alb_jenkins_slave" {
-  name               = "jenkins-slave-alb"
-  subnets            = ["${aws_subnet.public-subnet.id}", "${aws_subnet.public-subnet2.id}"]
-  security_groups    = ["${aws_security_group.sg_jenkins.id}"]
-  internal           = false
-  load_balancer_type = "application"
-  tags = {
-    Environment = "dev"
-  }
-}
-
 resource "aws_lb_target_group" "jenkins-master-8080" {
   name     = "jenkins-master-8080"
   port     = 8080 
@@ -123,18 +112,10 @@ resource "aws_lb_target_group" "jenkins-master-8080" {
   vpc_id   = "${aws_vpc.default.id}"
   health_check {
     path = "/"
-    matcher = "200,403"
-  }
-}
-
-resource "aws_lb_target_group" "jenkins-slave-8080" {
-  name     = "jenkins-slave-8080"
-  port     = 8080 
-  protocol = "HTTP"
-  vpc_id   = "${aws_vpc.default.id}"
-  health_check {
-    path = "/"
-    matcher = "200,403"
+    interval = 8
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+    matcher = "200"
   }
 }
 
@@ -145,6 +126,9 @@ resource "aws_lb_target_group" "git-80" {
   vpc_id   = "${aws_vpc.default.id}"
   health_check {
     path = "/"
+    interval = 8
+    healthy_threshold = 2
+    unhealthy_threshold = 2
     matcher = "200,302"
   }
 }
@@ -155,16 +139,6 @@ resource "aws_lb_listener" "jenkins-master-8080" {
   protocol          = "HTTP"
   default_action {
     target_group_arn = "${aws_lb_target_group.jenkins-master-8080.id}"
-    type             = "forward"
-  }
-}
-
-resource "aws_lb_listener" "jenkins-slave-8080" {
-  load_balancer_arn = "${aws_lb.alb_jenkins_slave.id}"
-  port              = "8080"
-  protocol          = "HTTP"
-  default_action {
-    target_group_arn = "${aws_lb_target_group.jenkins-slave-8080.id}"
     type             = "forward"
   }
 }
@@ -269,7 +243,7 @@ resource "aws_autoscaling_group" "jenkins-slave" {
   max_size             = "${var.asg_jenkins_slave_max}"
   desired_capacity     = "${var.asg_jenkins_slave_desired}"
   vpc_zone_identifier  = ["${aws_subnet.private-subnet.id}", "${aws_subnet.private-subnet2.id}"]
-  target_group_arns    = ["${aws_lb_target_group.jenkins-slave-8080.id}"]
+#  target_group_arns    = ["${aws_lb_target_group.jenkins-slave-8080.id}"]
   lifecycle {
     create_before_destroy = true
   }

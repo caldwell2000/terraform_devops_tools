@@ -35,15 +35,15 @@ data "template_cloudinit_config" "config" {
     content      = "${data.template_file.shell-script.rendered}"
   }
 }
-#output "GitLab_One-Time_DB_Creation_Command-Primary_Only" {
-#        value = "force=yes; export force; gitlab-rake gitlab:setup"
-#}
-#output "GitLab_One-Time_DB_Creation_Command-Primary_Only_2" {
-#        value = "sudo gitlab-ctl reconfigure"
-#}
-#output "bastion_pub_ip" {
-#        value = "${aws_instance.bastion.public_ip}"
-#}
-#output "Load_Balancer_Public_IP" {
-#        value = "${aws_lb.alb_apps.dns_name}"
-#}
+output "GitLab_One-Time_DB_Creation_Command-Primary_Only" {
+        value = "force=yes; export force; gitlab-rake gitlab:setup"
+}
+output "GitLab_One-Time_DB_Creation_Command-Primary_Only_2" {
+        value = "sudo gitlab-ctl reconfigure"
+}
+output "bastion_pub_ip" {
+        value = "${aws_instance.bastion.public_ip}"
+}
+output "Load_Balancer_Public_IP" {
+        value = "${aws_lb.alb_apps.dns_name}"
+}

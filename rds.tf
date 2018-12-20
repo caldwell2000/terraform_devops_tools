@@ -12,7 +12,3 @@ resource "aws_db_instance" "gitlab_postgres" {
   vpc_security_group_ids = ["${aws_security_group.sg_db.id}"]
   skip_final_snapshot    = true
 }
-
-#output "gitlab_postgres_address" {
-#  value = "${aws_db_instance.gitlab_postgres.address}"
-#}
