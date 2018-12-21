@@ -7,7 +7,6 @@ resource "aws_elasticache_replication_group" "gitlab_redis" {
   replication_group_id          = "gitlab"
   replication_group_description = "Redis cluster powering GitLab"
   engine                        = "redis"
-#  engine_version                = "3.2.10"
   node_type                     = "cache.m4.large"
   number_cache_clusters         = 2
   port                          = 6379

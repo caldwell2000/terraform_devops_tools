@@ -219,7 +219,7 @@ resource "aws_security_group" "sg_git" {
     to_port = 80
     protocol = "tcp"
 #cidr_blocks = ["${aws_nat_gateway.nat_gw1.public_ip}/31"]
-    cidr_blocks = ["${format("%s/31", aws_nat_gateway.nat_gw1.public_ip)}"]
+    cidr_blocks = ["${format("%s/32", aws_nat_gateway.nat_gw1.public_ip)}"]
 #Name = "${format("web-%03d", count.index + 1)}"
   }
   ingress {
