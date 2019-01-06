@@ -4,6 +4,6 @@ resource "aws_vpc" "default" {
   enable_dns_hostnames = true
 
   tags {
-    Name = "DevOps POC VPC"
+    Name = "${var.vpc_name}"
   }
 }

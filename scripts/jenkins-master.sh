@@ -37,10 +37,29 @@ mv $JENKINS_DIR/* /jenkins
 chkconfig jenkins on
 service jenkins start
 
+echo "install jq utility - JSON Parser"
+wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 -O jq
+chmod +x jq
+mv jq /usr/local/bin
+
+echo "install golang"
+curl -LO https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz
+tar -C /usr/local -xvzf go1.7.linux-amd64.tar.gz
+export GOPATH="/tmp"
+export GOBIN="/tmp"
+
+echo "install aws ecr credentials helper for Jenkins"
+/usr/local/go/bin/go get -u github.com/awslabs/amazon-ecr-credential-helper/ecr-login/cli/docker-credential-ecr-login
+cp /tmp/docker-credential-ecr-login /usr/local/bin
+echo "adding credential lookup function for docker"
+sed -i.bak '2i\
+    "credsStore": "ecr-login",\
+' ~/.docker/config.json
+
 echo "Install Telegraf"
 wget https://dl.influxdata.com/telegraf/releases/telegraf-1.6.0-1.x86_64.rpm -O /tmp/telegraf.rpm
 yum localinstall -y /tmp/telegraf.rpm
-rm /tmp/telegraf.rpm
+rm -f /tmp/telegraf.rpm
 chkconfig telegraf on
 mv /tmp/telegraf.conf /etc/telegraf/telegraf.conf
 service telegraf start

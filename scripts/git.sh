@@ -43,14 +43,15 @@ mount -a
 
 URL=`aws elbv2 --region=us-east-2 --output=text describe-load-balancers |grep private-apps |awk '{print $4}'`; export URL
 EXTERNAL_URL="http://$URL"; export EXTERNAL_URL
-yum install -y gitlab-ce
+yum install -y gitlab-ce-11.5.6-ce.0.el6
 sudo yum install -y git
 sudo yum install -y postfix
 sudo systemctl enable postfix
 sudo systemctl start postfix
 # Database Initialization - Run Once Manually after deployment
-# force=yes; export force
-# gitlab-rake gitlab:setup
+#force=yes; export force
+#gitlab-rake gitlab:setup
+#gitlab-ctl reconfigure
 
 # Install OS Patches
 sudo yum update -y

@@ -19,7 +19,7 @@ resource "aws_lb_target_group" "jenkins-master-8080" {
     interval = 8
     healthy_threshold = 2
     unhealthy_threshold = 2
-    matcher = "200"
+    matcher = "200,403"
   }
 }
 
@@ -99,6 +99,7 @@ resource "aws_launch_configuration" "jenkins-master" {
   lifecycle {
     create_before_destroy = true
   }
+  depends_on = ["aws_nat_gateway.nat_gw1"]
 }
 
 resource "aws_launch_configuration" "jenkins-slave" {

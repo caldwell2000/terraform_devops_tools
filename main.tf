@@ -1,5 +1,3 @@
-// terraform/main.tf
-
 data "template_file" "shell-script" {
   template = "${file("scripts/git.sh")}"
 }

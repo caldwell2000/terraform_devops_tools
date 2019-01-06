@@ -38,13 +38,13 @@ resource "aws_security_group" "sgbastion" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks =  ["173.172.103.202/32"]
+    cidr_blocks =  ["173.172.103.202/32","72.129.229.81/32"]
   }
   ingress {
     from_port = -1
     to_port = -1
     protocol = "icmp"
-    cidr_blocks = ["173.172.103.202/32"]
+    cidr_blocks = ["173.172.103.202/32","72.129.229.81/32"]
   }
   egress {
     from_port = 0

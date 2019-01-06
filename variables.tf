@@ -1,8 +1,3 @@
-#variable "aws_access_key" {}
-#variable "aws_secret_key" {}
-#variable "aws_key_path" {}
-#variable "aws_key_name" {}
-
 provider "aws" {
 	region =	"${var.aws_region}"
 	profile	= 	"poc"
@@ -19,16 +14,14 @@ variable "aws_region" {
     default = "us-east-2"
 }
 
-#variable "ami" {
-#    description = "AMIs by region"
-#    default = {
-#        us-east-2 = "ami-03291866" # Red Hat Enterprise Linux 7.5
-#    }
-#}
-
 variable "remote_cidr" {
     description = "CIDR from Remote Testing Source"
     default = "173.172.103.202/32"
+}
+
+variable "vpc_name" {
+    description = "Name Tag for VPC"
+    default = "DevOps_dev"
 }
 
 variable "vpc_cidr" {
@@ -67,7 +60,7 @@ variable "private_db_subnet_2b_cidr" {
 }
 variable "key_path" {
   description = "SSH Public Key path"
-  default = "C:/Users/rich.caldwell/.ssh/id_rsa.pub"
+  default = "C:/Users/caldwell/.ssh/id_rsa.pub"
 }
 variable "asg_jenkins_slave_min" {
   description = "Auto Scaling Minimum Size"
@@ -79,7 +72,7 @@ variable "asg_jenkins_slave_max" {
 }
 variable "asg_jenkins_slave_desired" {
   description = "Auto Scaling Desired Size"
-  default = "2"
+  default = "1"
 }
 variable "asg_jenkins_master_min" {
   description = "Auto Scaling Minimum Size"
@@ -87,7 +80,7 @@ variable "asg_jenkins_master_min" {
 }
 variable "asg_jenkins_master_max" {
   description = "Auto Scaling Maximum Size"
-  default = "1"
+  default = "2"
 }
 variable "asg_jenkins_master_desired" {
   description = "Auto Scaling Desired Size"
@@ -95,7 +88,7 @@ variable "asg_jenkins_master_desired" {
 }
 variable "asg_git_min" {
   description = "Auto Scaling Minimum Size"
-  default = "2"
+  default = "1"
 }
 variable "asg_git_max" {
   description = "Auto Scaling Maximum Size"
@@ -103,7 +96,7 @@ variable "asg_git_max" {
 }
 variable "asg_git_desired" {
   description = "Auto Scaling Desired Size"
-  default = "2"
+  default = "1"
 }
 variable "data_volume_type" {
   description = "EBS Volume Type"
@@ -126,4 +119,26 @@ variable "git_rds_multiAZ" {
 variable "availability_zones" {
   type    = "list"
   default = ["us-east-2a", "us-east-2b"]
+}
+
+#ECS Variables
+variable "AWS_ECR_REGION" {
+  type    = "string"
+  default = "us-east-2"
+}
+
+variable "TAG_ENV" {
+  default = "dev"
+}
+
+variable "ENV" {
+  default = "PROD"
+}
+
+variable "CIDR_PUBLIC" {
+  default = "10.0.0.0/25,10.0.0.128/25"
+}
+
+variable "CIDR_PRIVATE" {
+  default = "10.0.1.0/25,10.0.1.128/25"
 }
