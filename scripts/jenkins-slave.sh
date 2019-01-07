@@ -19,6 +19,8 @@ JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.191.b12-1.el7_6.x86_64/; export J
 wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
+# Add jenkins user to the root group to enable building docker containers
+sudo usermod -a -G root jenkins
 chkconfig jenkins on
 service jenkins start
 

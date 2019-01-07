@@ -34,6 +34,8 @@ yum install -y jenkins
 sed -i 's/\/var\/lib\/jenkins/\/jenkins/g' /etc/sysconfig/jenkins
 chown jenkins:jenkins /jenkins 
 mv $JENKINS_DIR/* /jenkins
+# Add jenkins user to the root group to enable building docker containers
+sudo usermod -a -G root jenkins
 chkconfig jenkins on
 service jenkins start
 

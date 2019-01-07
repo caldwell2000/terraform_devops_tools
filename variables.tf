@@ -96,7 +96,7 @@ variable "asg_git_max" {
 }
 variable "asg_git_desired" {
   description = "Auto Scaling Desired Size"
-  default = "1"
+  default = "2"
 }
 variable "data_volume_type" {
   description = "EBS Volume Type"
