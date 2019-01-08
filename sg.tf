@@ -38,13 +38,13 @@ resource "aws_security_group" "sgbastion" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks =  ["173.172.103.202/32","72.129.229.81/32"]
+    cidr_blocks =  ["173.172.103.202/32"]
   }
   ingress {
     from_port = -1
     to_port = -1
     protocol = "icmp"
-    cidr_blocks = ["173.172.103.202/32","72.129.229.81/32"]
+    cidr_blocks = ["173.172.103.202/32"]
   }
   egress {
     from_port = 0
@@ -69,14 +69,7 @@ resource "aws_security_group" "sg_jenkins"{
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   ingress {
@@ -206,21 +199,13 @@ resource "aws_security_group" "sg_git" {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2a_cidr}"]
-  }
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["${var.public_subnet_2b_cidr}"]
+    cidr_blocks = ["${var.vpc_cidr}"]
   }
   ingress {
     from_port = 80
     to_port = 80
     protocol = "tcp"
-#cidr_blocks = ["${aws_nat_gateway.nat_gw1.public_ip}/31"]
     cidr_blocks = ["${format("%s/32", aws_nat_gateway.nat_gw1.public_ip)}"]
-#Name = "${format("web-%03d", count.index + 1)}"
   }
   ingress {
     from_port = 80

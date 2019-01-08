@@ -39,9 +39,9 @@ output "GitLab_One-Time_DB_Creation_Command-Primary_Only" {
 output "GitLab_One-Time_DB_Creation_Command-Primary_Only_2" {
         value = "sudo gitlab-ctl reconfigure"
 }
-output "bastion_pub_ip" {
+output "Bastion Public IP" {
         value = "${aws_instance.bastion.public_ip}"
 }
-output "Load_Balancer_Public_IP" {
+output "DevOps Apps Public IP (ELB)" {
         value = "${aws_lb.alb_apps.dns_name}"
 }

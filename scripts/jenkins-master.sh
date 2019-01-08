@@ -32,6 +32,7 @@ wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/je
 rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
 yum install -y jenkins
 sed -i 's/\/var\/lib\/jenkins/\/jenkins/g' /etc/sysconfig/jenkins
+sed -i 's/jenkins:\/bin\/false/jenkins:\/bin\/bash/g' /etc/passwd
 chown jenkins:jenkins /jenkins 
 mv $JENKINS_DIR/* /jenkins
 # Add jenkins user to the root group to enable building docker containers
@@ -82,12 +83,14 @@ echo "Install git"
 yum install -y git
 
 echo "Setup SSH key"
-mkdir /jenkins/.ssh
-touch /jenkins/.ssh/known_hosts
-chown -R jenkins:jenkins $JENKINS_DIR/.ssh
-chmod 700 $JENKINS_DIR/.ssh
-mv /tmp/id_rsa $JENKINS_DIR/.ssh/id_rsa
-chmod 600 $JENKINS_DIR/.ssh/id_rsa
+JENKINS_HOME=/var/lib/jenkins
+mkdir /var/lib/jenkins/.ssh
+touch /var/lib/jenkins/.ssh/known_hosts
+ssh-keygen -t rsa -b 2048 -f /var/lib/jenkins/.ssh/id_rsa -N ''
+chmod 700 $JENKINS_HOME/.ssh
+chmod 644 $JENKINS_HOME/.ssh/id_rsa.pub
+chmod 600 $JENKINS_HOME/.ssh/id_rsa
+chown -R jenkins:jenkins $JENKINS_HOME/.ssh
 
 echo "Install Postfix"
 sudo yum -y install postfix
