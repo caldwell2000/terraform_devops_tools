@@ -10,10 +10,10 @@ resource "aws_elasticache_replication_group" "gitlab_redis" {
   node_type                     = "cache.m4.large"
   number_cache_clusters         = 2
   port                          = 6379
-  availability_zones            = ["${var.availability_zones}"]
+  availability_zones            = var.availability_zones
   automatic_failover_enabled    = true
-security_group_ids = ["${aws_security_group.sg_redis.id}"]
-  subnet_group_name  = "${aws_elasticache_subnet_group.gitlab_redis.name}"
+  security_group_ids            = ["${aws_security_group.sg_redis.id}"]
+  subnet_group_name             = "${aws_elasticache_subnet_group.gitlab_redis.name}"
 }
 
 output "gitlab_redis_endpoint_address" {
